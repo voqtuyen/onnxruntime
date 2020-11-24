@@ -2282,6 +2282,35 @@ Example 4:
         }
       });
 
+  ONNX_CONTRIB_OPERATOR_SCHEMA(DeformConv2D)
+      .SetDomain(kOnnxDomain)
+      .SinceVersion(1)
+      .SetSupportLevel(OpSchema::SupportType::EXPERIMENTAL)
+      .SetDoc("DeformConv2D")
+      .Attr("stride_h", "Stride step along the h axis.", AttributeProto::INT, OPTIONAL)
+      .Attr("stride_w", "Stride step along the w axis", AttributeProto::INT, OPTIONAL)
+      .Attr("pad_h", "Padding along the h axis.", AttributeProto::INT, OPTIONAL)
+      .Attr("pad_w", "Padding aling the w xias.", AttributeProto::INT, OPTIONAL)
+      .Attr("dilation_h", "Dilation rate along the h axis.", AttributeProto::INT, OPTIONAL)
+      .Attr("dilation_w", "Dilation rate along the y axis.", AttributeProto::INT, OPTIONAL)
+      .Attr("groups", "Groups.", AttributeProto::INT, OPTIONAL)
+      .Attr("offset_groups", "oset groups",AttributeProto::INT, OPTIONAL)
+      .Attr("use_mask", "The epsilon value to use to avoid division by zero.", AttributeProto::STRING, OPTIONAL)
+      .Input(0, "input", "Op input tensor.", "T")
+      .Input(1, "weight", "Op weight tensor.", "T")
+      .Input(2, "offset", "Op offset tensor.", "T")
+      .Input(3, "mask", "Op mask tensor.", "T")
+      .Input(4, "bias", "Op bias tensor.", "T")
+      .Output(0, "Y", "Output data tensor.", "T")
+      .TypeConstraint(
+          "T",
+          {"tensor(float16)", "tensor(float)", "tensor(double)"},
+          "Constrain input and output types (except mean and inv_std_var) to float tensors.")
+      .TypeAndShapeInferenceFunction([](ONNX_NAMESPACE::InferenceContext& ctx) {
+        ONNX_NAMESPACE::propagateElemTypeFromInputToOutput(ctx, 0, 0);
+        ONNX_NAMESPACE::convPoolShapeInference(ctx, true, false, 0, 1);
+      });
+
   // Register the NCHWc schemas if supported by the platform.
   if (MlasNchwcGetBlockSize() > 1) {
     RegisterNchwcSchemas();
